@@ -8,7 +8,7 @@ const cors = require('cors')
 const app = express();
 app.use(express.json());
 const corsOptions = {
-    origin: "https://techuprise-yashpatel.netlify.app",
+    origin: ["https://techuprise-yashpatel.netlify.app","http://localhost:3000/"],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
     credentials: true,
 };
