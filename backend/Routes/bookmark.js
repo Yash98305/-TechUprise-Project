@@ -4,10 +4,10 @@ const pages = require('../Controllers/bookmark.js');
 const {isAuthenticatedUser} = require('../Middlewares/authMiddlewares.js')
 const formidable = require("express-formidable");
 
-router.route("/").post(pages.register);
-router.route("/").get(pages.login);
-router.route("/:id").get(isAuthenticatedUser, pages.profile);
-router.route('/:id').put(pages.photo)
-router.route('/:id').delete(isAuthenticatedUser,formidable(),pages.updateProfile)
+router.route("/").post(isAuthenticatedUser,pages.createBookmarks);
+router.route("/").get(isAuthenticatedUser,pages.getBookmarks);
+router.route("/:id").get(isAuthenticatedUser,pages.getSingleBookmark);
+router.route('/:id').put(isAuthenticatedUser,pages.updateSingleBookmark)
+router.route('/:id').delete(isAuthenticatedUser,pages.deleteSingleBookmark)
 
 module.exports = router;

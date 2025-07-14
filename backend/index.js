@@ -23,4 +23,5 @@ app.get("/",(req,res)=>{
 app.use("/api/v1/auth",auth)
 app.use("/api/v1/notes",note)
 app.use("/api/v1/bookmarks",bookmark)
+
 module.exports =app

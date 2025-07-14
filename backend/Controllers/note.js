@@ -3,38 +3,76 @@ const catchAsyncError = require("../Middlewares/catchAsyncError");
 const ErrorHandler = require("../Utils/errorHandler");
 
 exports.createNotes = catchAsyncError(async (req, res, next) => {  
-    const note = await Note.create(req.body);
-    res.status(201).json(note);
+    const { title, content, tags, favorite } = req.body;
+  const note = await Note.create({ title, content, tags, favorite, userId: req.user });
+  res.status(201).json(note);
   
 });
 
 exports.getNotes = catchAsyncError(async (req, res, next) => {
-      const { q, tags } = req.query;
-  const query = {};
-  if (q) query.$or = [
-    { title: { $regex: q, $options: 'i' } },
-    { content: { $regex: q, $options: 'i' } }
-  ];
-  if (tags) query.tags = { $in: tags.split(',') };
+  const { q, tags } = req.query;
+  const userId = req.userId;
 
-  const notes = await Note.find(query);
+  const query = {
+    userId
+  };
+
+  if (q) {
+    query.$or = [
+      { title: { $regex: q, $options: 'i' } },
+     // { content: { $regex: q, $options: 'i' } } // include content search too
+    ];
+  }
+
+  if (tags) {
+    // if $or already exists, merge with $and
+    if (query.$or) {
+      query.$and = [
+        { $or: query.$or },
+        { tags: { $all: tags.split(',').map(tag => tag.trim()) } }
+      ];
+      delete query.$or; // remove top-level $or
+    } else {
+      query.tags = { $all: tags.split(',').map(tag => tag.trim()) };
+    }
+  }
+
+  const notes = await Note.find(query).sort({ createdAt: -1 });
   res.json(notes);
 });
+    
 
 exports.getSingleNote = catchAsyncError(async (req, res, next) => {
-      const note = await Note.findById(req.params.id);
-  note ? res.json(note) : res.status(404).json({ error: 'Not found' });
+ const note = await Note.findOne({ _id: req.params.id, userId: req.user });
+  if (!note) return res.status(404).json({ message: 'Not found' });
+  res.json(note);
 });
 
+
 exports.UpdateSingleNote = catchAsyncError(async (req, res, next) => {
-    
-    const updated = await Note.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updated);
+
+  // const updated = await Note.findOneAndUpdate(
+  //   { _id: req.params.id, userId: req.user }, 
+  //   req.body,
+  //   { new: true }
+  // );
   
+  // if (!updated) {
+  //   return res.status(404).json({ message: 'Note not found' });
+  // }
+
+  // res.json(updated);
+   const note = await Note.findOne({ _id: req.params.id, userId: req.user });
+  if (!note) return res.status(404).json({ message: 'Note not found' });
+
+  note.favorite = !note.favorite;
+  await note.save();
+  res.json(note);
 });
 
 exports.deleteSingleNote = catchAsyncError(async (req, res, next) => {  
-    await Note.findByIdAndDelete(req.params.id);
-  res.json({ message: 'Deleted' });
+     const deleted = await Note.findOneAndDelete({ _id: req.params.id, userId: req.user });
+  if (!deleted) return res.status(404).json({ message: 'Not found' });
+  res.json({ message: 'Deleted successfully' });
 });
 

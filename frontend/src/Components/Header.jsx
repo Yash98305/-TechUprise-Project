@@ -21,7 +21,7 @@ import axios from "axios";
 import { useAuth } from "../Context/auth";
 import { toast } from "react-toastify";
 import img from "../Assets/DreamFusion_Logo.png"
-const pages = ["Home", "About"];  
+const pages = ["Home", "Note","Bookmark"];  
 const settings = ["Profile", "Logout"];
 
 const Header = ()=> {
@@ -43,8 +43,11 @@ const {auth,api,setAuth} = useAuth();
     if (val === "home") {
       navigate("/");
     }
-    if (val === "about") {
-      navigate("/about");
+    if (val === "note") {
+      navigate("/note");
+    }
+    if (val === "bookmark") {
+      navigate("/bookmark");
     }
 
     setAnchorElNav(null);
@@ -156,7 +159,7 @@ const {auth,api,setAuth} = useAuth();
             LOGO
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-            {pages.map((page) => (
+            {auth?pages.map((page) => (
               <Button
                 key={page}
                 onClick={handleCloseNavMenu}
@@ -164,7 +167,7 @@ const {auth,api,setAuth} = useAuth();
               >
                 {page}
               </Button>
-            ))}
+            )):""}
           </Box>
           {auth.token<=0 && !auth?.token ? (
             
