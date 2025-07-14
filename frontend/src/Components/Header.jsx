@@ -1,4 +1,5 @@
 import * as React from "react";
+
 import {
   AppBar,
   Container,
@@ -11,6 +12,7 @@ import {
   Button,
   Tooltip,
   Avatar,
+  circularProgressClasses,
 } from "@mui/material";
 import AdbIcon from "@mui/icons-material/Adb";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -21,7 +23,7 @@ import axios from "axios";
 import { useAuth } from "../Context/auth";
 import { toast } from "react-toastify";
 import img from "../Assets/logo.avif"
-const pages = ["Home", "Note","Bookmark"];  
+const pages = ["Home", "Note","Bookmark","Favorite"];  
 const settings = ["Profile", "Logout"];
 
 const Header = ()=> {
@@ -30,6 +32,18 @@ const Header = ()=> {
   const [anchorElUser, setAnchorElUser] = useState(null);
 const {auth,api,setAuth} = useAuth();
 
+ const [name, setName] = useState("");
+
+ const getProfile = async () => {
+    try {
+      const res = await axios.get(`${api}/auth/profile`);
+      if (res) {
+        setName(res.data.user.name)
+      }
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -48,6 +62,9 @@ const {auth,api,setAuth} = useAuth();
     }
     if (val === "bookmark") {
       navigate("/bookmark");
+    }
+    if (val === "favorite") {
+      navigate("/favorite");
     }
 
     setAnchorElNav(null);
@@ -72,12 +89,14 @@ const {auth,api,setAuth} = useAuth();
     setAnchorElUser(null);
   };
 
+  
   useEffect(() => {
+    getProfile();
   }, [auth,api]);
 
   return (
     <>
-    <AppBar position="static" sx={{ background:"none",marginTop:2,boxShadow:"none"}}>
+    <AppBar position="fixed" sx={{ background:"none",marginTop:2,boxShadow:"none"}}>
       <Container maxWidth="xl" sx={{borderRadius:10,
        width:"96vw",boxShadow: "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",backgroundColor: "#e6e8e8"
   ,backdropFilter: "blur(20px) saturate(160%) contrast(45%) brightness(140%)",
@@ -198,7 +217,7 @@ const {auth,api,setAuth} = useAuth();
             <Box sx={{ flexGrow: 0 }}>
               <Tooltip title="Open settings">
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="U" sx={{boxShadow: "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",background:"white"}} src = {`${api}/auth/photo/${auth?.userId}`} />
+                  <Avatar alt="U" sx={{boxShadow: "rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset",background:"white"}} src={`${api}/auth/photo/${auth?.userId}`||`https://avatar.iran.liara.run/username?username=${name}`} />
                 </IconButton>
               </Tooltip>
               <Menu
