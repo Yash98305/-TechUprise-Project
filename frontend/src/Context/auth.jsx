@@ -9,7 +9,7 @@ export const AuthProvider = ({children})=>{
         token : ""
     });
     axios.defaults.headers.common.Authorization= auth?.token;
-const api = "http://localhost:8000/api/v1"
+const api = "https://techuprise-project.onrender.com/api/v1"
 useEffect(()=>{
     const data = localStorage.getItem("auth");
     if(data){

@@ -16,12 +16,12 @@ const Bookmark = () => {
   const [filterTags, setFilterTags] = useState('');
   const [selectedBookmark, setSelectedBookmark] = useState(null);
   const [editBookmark, setEditBookmark] = useState({ title: '', description: '', url: '', tags: '' });
-  const { auth } = useAuth();
+  const { auth,api } = useAuth();
 
   const fetchBookmarks = async () => {
     try {
       const query = `?q=${search.trim()}&tags=${filterTags.trim()}`;
-      const res = await axios.get(`http://localhost:8000/api/v1/bookmarks${query}`, {
+      const res = await axios.get(`${api}/bookmarks${query}`, {
         headers: { Authorization: `${auth?.token}` },
       });
       setBookmarks(res.data);
@@ -35,7 +35,7 @@ const Bookmark = () => {
     e.preventDefault();
     try {
       await axios.post(
-        'http://localhost:8000/api/v1/bookmarks',
+        `${api}/bookmarks`,
         {
           url,
           title,
@@ -58,7 +58,7 @@ const Bookmark = () => {
 
   const deleteBookmark = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/api/v1/bookmarks/${id}`, {
+      await axios.delete(`${api}/bookmarks/${id}`, {
         headers: { Authorization: `${auth?.token}` },
       });
       toast.success('Deleted');
@@ -71,7 +71,7 @@ const Bookmark = () => {
   const toggleFavorite = async (id) => {
     try {
       await axios.put(
-        `http://localhost:8000/api/v1/bookmarks/favorite/${id}`,
+        `${api}/bookmarks/favorite/${id}`,
         {},
         { headers: { Authorization: `${auth?.token}` } }
       );
@@ -101,7 +101,7 @@ const Bookmark = () => {
   const handleUpdateBookmark = async () => {
     try {
       await axios.put(
-        `http://localhost:8000/api/v1/bookmarks/${selectedBookmark._id}`,
+        `${api}/bookmarks/${selectedBookmark._id}`,
         {
           ...editBookmark,
           tags: editBookmark.tags.split(',').map((tag) => tag.trim()),

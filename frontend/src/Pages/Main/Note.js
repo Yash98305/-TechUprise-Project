@@ -15,12 +15,12 @@ const Note = () => {
   const [filterTags, setFilterTags] = useState('');
   const [selectedNote, setSelectedNote] = useState(null);
   const [editNote, setEditNote] = useState({ title: '', content: '', tags: '' });
-  const { auth } = useAuth();
+  const { auth,api } = useAuth();
 
   const fetchNotes = async () => {
     try {
       const query = `?q=${search.trim()}&tags=${filterTags.trim()}`;
-      const res = await axios.get(`http://localhost:8000/api/v1/notes${query}`, {
+      const res = await axios.get(`${api}/notes${query}`, {
         headers: { Authorization: `${auth?.token}` },
       });
       setNotes(res.data);
@@ -34,7 +34,7 @@ const Note = () => {
     e.preventDefault();
     try {
       await axios.post(
-        'http://localhost:8000/api/v1/notes',
+        `${api}/notes`,
         {
           title,
           content,
@@ -57,7 +57,7 @@ const Note = () => {
 
   const deleteNote = async (id) => {
     try {
-      await axios.delete(`http://localhost:8000/api/v1/notes/${id}`, {
+      await axios.delete(`${api}/notes/${id}`, {
         headers: { Authorization: `${auth?.token}` },
       });
       toast.success('Note deleted');
@@ -69,7 +69,7 @@ const Note = () => {
 
   const toggleFavorite = async (id) => {
     try {
-      await axios.put(`http://localhost:8000/api/v1/notes/favorite/${id}`, {}, {
+      await axios.put(`${api}/notes/favorite/${id}`, {}, {
         headers: { Authorization: `${auth?.token}` },
       });
       fetchNotes();
@@ -96,7 +96,7 @@ const Note = () => {
   const handleUpdateNote = async () => {
     try {
       await axios.put(
-        `http://localhost:8000/api/v1/notes/${selectedNote._id}`,
+        `${api}/notes/${selectedNote._id}`,
         {
           ...editNote,
           tags: editNote.tags.split(',').map((tag) => tag.trim()),
@@ -113,7 +113,7 @@ const Note = () => {
 
   useEffect(() => {
     if (auth?.token) fetchNotes();
-  }, [auth?.token, search, filterTags]);
+  }, [api,auth?.token, search, filterTags]);
 
   return (
     <div className="p-4 max-w-4xl mx-auto">

@@ -7,7 +7,14 @@ const cors = require('cors')
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+const corsOptions = {
+    origin: "https://techuprise-yashpatel.netlify.app",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+    credentials: true,
+};
+
+
+app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 
 

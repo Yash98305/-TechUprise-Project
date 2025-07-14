@@ -26,13 +26,13 @@ const Profile = () => {
         setLastName(lName || '');
         setEmail(res.data.user.email);
         setPhone(res.data.user.phone);
-        setPreview(res.data.user.photo.length>0);
+        setPreview(res.data.user.photo!=null);
       }
     } catch (error) {
       console.error(error.message);
     }
   };
-console.log(preview)
+  console.log(preview)
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     setPhoto(file);

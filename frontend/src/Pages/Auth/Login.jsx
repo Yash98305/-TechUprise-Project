@@ -18,7 +18,7 @@ const Login = () => {
 
   const handleClickShowPassword = () => setShowPassword((prev) => !prev);
   const handleMouseDownPassword = (event) => event.preventDefault();
-
+console.log(email)
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) return toast.warn("Please fill in all fields");

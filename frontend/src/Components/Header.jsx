@@ -42,7 +42,7 @@ const Header = () => {
       const res = await axios.get(`${api}/auth/profile`);
       if (res) {
         setName(res.data.user.name);
-        setPhoto(res.data.user.photo.length>0);
+        setPhoto(res.data.user.photo!=null);
       }
     } catch (error) {
       console.error(error.message);
