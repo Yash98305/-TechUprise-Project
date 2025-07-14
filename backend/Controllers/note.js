@@ -8,39 +8,29 @@ exports.createNotes = catchAsyncError(async (req, res, next) => {
   res.status(201).json(note);
   
 });
+exports.getAllNotes = catchAsyncError(async (req, res, next) => {
+  const notes = await Note.find({ userId: req.user }).sort({ createdAt: -1 });
+  res.json(notes);
+});
 
-exports.getNotes = catchAsyncError(async (req, res, next) => {
+exports.getFilteredNotes = catchAsyncError(async (req, res, next) => {
   const { q, tags } = req.query;
-  const userId = req.userId;
 
-  const query = {
-    userId
-  };
+  const query = { userId: req.user };
 
   if (q) {
-    query.$or = [
-      { title: { $regex: q, $options: 'i' } },
-     // { content: { $regex: q, $options: 'i' } } // include content search too
-    ];
+    query.$or = [{ title: { $regex: q, $options: 'i' } }];
   }
 
   if (tags) {
-    // if $or already exists, merge with $and
-    if (query.$or) {
-      query.$and = [
-        { $or: query.$or },
-        { tags: { $all: tags.split(',').map(tag => tag.trim()) } }
-      ];
-      delete query.$or; // remove top-level $or
-    } else {
-      query.tags = { $all: tags.split(',').map(tag => tag.trim()) };
-    }
+    const tagArray = tags.split(',').map(tag => tag.trim());
+    query.tags = { $all: tagArray };
   }
 
   const notes = await Note.find(query).sort({ createdAt: -1 });
   res.json(notes);
 });
-    
+
 
 exports.getSingleNote = catchAsyncError(async (req, res, next) => {
  const note = await Note.findOne({ _id: req.params.id, userId: req.user });

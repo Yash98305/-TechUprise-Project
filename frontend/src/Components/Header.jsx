@@ -20,7 +20,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useAuth } from "../Context/auth";
 import { toast } from "react-toastify";
-import img from "../Assets/DreamFusion_Logo.png"
+import img from "../Assets/logo.avif"
 const pages = ["Home", "Note","Bookmark"];  
 const settings = ["Profile", "Logout"];
 
@@ -100,7 +100,7 @@ const {auth,api,setAuth} = useAuth();
               textDecoration: "none",
             }}
           >
-             <img src={img} alt="LOGO" />
+             <img src={img} alt="LOGO" className="mix-blend-multiply" />
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>

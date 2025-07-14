@@ -9,28 +9,35 @@ const Note = () => {
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
   const [search, setSearch] = useState('');
-const [filterTags, setFilterTags] = useState('');
+  const [filterTags, setFilterTags] = useState('');
   const { auth } = useAuth();
 
- const fetchNotes = async () => {
-  try {
-    const query = `?q=${search}&tags=${filterTags}`;
-    const res = await axios.get(`http://localhost:8000/api/v1/notes${query}`, {
-      headers: { Authorization: `${auth?.token}` },
-    });
-    setNotes(res.data);
-  } catch (err) {
-    toast.error('Failed to fetch notes');
-  }
-};
+  const fetchNotes = async () => {
+    try {
+      const query = `?q=${search.trim()}&tags=${filterTags.trim()}`;
+      const res = await axios.get(`http://localhost:8000/api/v1/notes${query}`, {
+        headers: { Authorization: `${auth?.token}` },
+      });
+      setNotes(res.data);
+    } catch (err) {
+      console.error('Fetch error:', err.response?.data || err.message);
+      toast.error('Failed to fetch notes');
+    }
+  };
 
   const createNote = async (e) => {
     e.preventDefault();
     try {
       await axios.post(
         'http://localhost:8000/api/v1/notes',
-        { title, content, tags: tags.split(',') },
-        { headers: { Authorization: `${auth?.token}` } }
+        {
+          title,
+          content,
+          tags: tags.split(',').map((t) => t.trim()),
+        },
+        {
+          headers: { Authorization: `${auth?.token}` },
+        }
       );
       setTitle('');
       setContent('');
@@ -38,6 +45,7 @@ const [filterTags, setFilterTags] = useState('');
       toast.success('Note added');
       fetchNotes();
     } catch (err) {
+      console.error('Create error:', err.response?.data || err.message);
       toast.error('Error creating note');
     }
   };
@@ -50,46 +58,49 @@ const [filterTags, setFilterTags] = useState('');
       toast.success('Note deleted');
       fetchNotes();
     } catch (err) {
+      console.error('Delete error:', err.response?.data || err.message);
       toast.error('Delete error');
     }
   };
 
   const toggleFavorite = async (id) => {
     try {
-      await axios.put(`http://localhost:8000/api/v1/notes/${id}`, {
-        headers: { Authorization: `${auth?.token}` },
-      });
+      await axios.put(
+        `http://localhost:8000/api/v1/notes/${id}`,
+        {}, 
+        {
+          headers: { Authorization: `${auth?.token}` },
+        }
+      );
       fetchNotes();
     } catch (err) {
+      console.error('Favorite toggle error:', err.response?.data || err.message);
       toast.error('Toggle favorite failed');
     }
   };
 
-
   useEffect(() => {
-  if (auth?.token) fetchNotes();
-}, [auth?.token, search, filterTags]);
+    if (auth?.token) fetchNotes();
+  }, [auth?.token, search, filterTags]);
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Notes</h1>
 
+      <input
+        placeholder="Search notes"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="w-full p-2 border rounded mb-4"
+      />
 
-  {/* Search input */}
-  <input
-    placeholder="Search notes"
-    value={search}
-    onChange={e => setSearch(e.target.value)}
-    className="w-full p-2 border rounded mb-4"
-  />
+      <input
+        placeholder="Filter by tags (comma separated)"
+        value={filterTags}
+        onChange={(e) => setFilterTags(e.target.value)}
+        className="w-full p-2 border rounded mb-4"
+      />
 
-  {/* Filter by tags input */}
-  <input
-    placeholder="Filter by tags (comma separated)"
-    value={filterTags}
-    onChange={(e) => setFilterTags(e.target.value)}
-    className="w-full p-2 border rounded mb-4"
-  />
       <form onSubmit={createNote} className="space-y-2 mb-6">
         <input
           placeholder="Title"
@@ -113,23 +124,29 @@ const [filterTags, setFilterTags] = useState('');
       </form>
 
       <ul className="grid gap-4">
-        {notes.map((note) => (
-          <li key={note._id} className="p-4 bg-white shadow rounded">
-            <div className="flex justify-between">
-              <div>
-                <h2 className="font-bold text-lg">{note.title}</h2>
-                <p>{note.content}</p>
-                <p className="text-sm text-gray-600">Tags: {note.tags.join(', ')}</p>
+        {notes.length === 0 ? (
+          <p className="text-gray-500">No notes found.</p>
+        ) : (
+          notes.map((note) => (
+            <li key={note._id} className="p-4 bg-white shadow rounded">
+              <div className="flex justify-between">
+                <div>
+                  <h2 className="font-bold text-lg">{note.title}</h2>
+                  <p>{note.content}</p>
+                  <p className="text-sm text-gray-600">Tags: {note.tags.join(', ')}</p>
+                </div>
+                <div className="flex flex-col items-end">
+                  <button onClick={() => toggleFavorite(note._id)} className="text-yellow-500 text-xl">
+                    {note.favorite ? '⭐' : '☆'}
+                  </button>
+                  <button onClick={() => deleteNote(note._id)} className="text-red-600 mt-2">
+                    🗑️
+                  </button>
+                </div>
               </div>
-              <div className="flex flex-col items-end">
-                <button onClick={() => toggleFavorite(note._id)} className="text-yellow-500 text-xl">
-                  {note.favorite ? '⭐' : '☆'}
-                </button>
-                <button onClick={() => deleteNote(note._id)} className="text-red-600 mt-2">🗑️</button>
-              </div>
-            </div>
-          </li>
-        ))}
+            </li>
+          ))
+        )}
       </ul>
     </div>
   );

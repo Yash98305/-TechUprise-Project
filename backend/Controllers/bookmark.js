@@ -30,10 +30,13 @@ console.log(11)
 exports.getBookmarks = catchAsyncError(async (req, res, next) => {
      const { q, tags } = req.query;
   const filter = { userId: req.user };
-  if (q) filter.title = { $regex: q, $options: 'i' };
-  if (tags) filter.tags = { $in: tags.split(',') };
+  if (q) filter.$or = [{ title: { $regex: q, $options: 'i' } }];
+  if (tags){
+    const tagArray = tags.split(',').map(tag => tag.trim());
+    query.tags = { $all: tagArray };
+  }
 
-  const bookmarks = await Bookmark.find(filter);
+  const bookmarks = await Bookmark.find(filter).sort({ createdAt: -1 });
   res.json(bookmarks);
 });
 
@@ -44,13 +47,12 @@ exports.getSingleBookmark = catchAsyncError(async (req, res, next) => {
 });
 
 exports.updateSingleBookmark = catchAsyncError(async (req, res, next) => {  
-     const updated = await Bookmark.findOneAndUpdate(
-    { _id: req.params.id, userId: req.user },
-    req.body,
-    { new: true }
-  );
-  if (!updated) return res.status(404).json({ message: 'Not found' });
-  res.json(updated);
+    const bookmark = await Bookmark.findOne({ _id: req.params.id, userId: req.user });
+      if (!bookmark) return res.status(404).json({ message: 'Bookmark not found' });
+    
+      bookmark.favorite = !bookmark.favorite;
+      await bookmark.save();
+      res.json(bookmark);
   
 });
 
