@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useAuth } from '../../Context/auth';
 import { Avatar, Fab, TextField, Button } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import avatar from "../../Assets/Avatar.jpg";
 
 const Profile = () => {
   const { api, auth } = useAuth();
@@ -12,7 +13,7 @@ const Profile = () => {
   const [phone, setPhone] = useState('');
   const [editMode, setEditMode] = useState(false);
   const [photo, setPhoto] = useState(null);
-  const [preview, setPreview] = useState('');
+  const [preview, setPreview] = useState(false);
 
   const getProfile = async () => {
     try {
@@ -25,13 +26,13 @@ const Profile = () => {
         setLastName(lName || '');
         setEmail(res.data.user.email);
         setPhone(res.data.user.phone);
-        setPreview(`${api}/auth/photo/${auth.userId}`);
+        setPreview(res.data.user.photo.length>0);
       }
     } catch (error) {
       console.error(error.message);
     }
   };
-
+console.log(preview)
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     setPhoto(file);
@@ -70,7 +71,7 @@ const Profile = () => {
       <div className="flex flex-col  items-center lg:w-1/3 gap-4 mix-blend-multiply">
         <Avatar
           alt="User"
-          src={preview || `https://avatar.iran.liara.run/username?username=${firstName}`}
+          src={preview?`${api}/auth/photo/${auth.userId}`: avatar}
           sx={{
             width: 250,
             height: 250,

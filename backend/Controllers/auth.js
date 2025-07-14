@@ -53,8 +53,8 @@ exports.photo = catchAsyncError(async (req, res, next) => {
 
 exports.updateProfile = catchAsyncError(async (req, res, next) => {
   const { photo } = req.files;
-  if(photo && photo.size > 1000000)
-    return next(new ErrorHandler("Photo should be less then 1mb",500));
+  // if(photo && photo.size > 1000000)
+  //   return next(new ErrorHandler("Photo should be less then 1mb",500));
   const user = await User.findByIdAndUpdate(
     req.user._id,
     { ...req.fields},

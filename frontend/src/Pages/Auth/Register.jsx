@@ -1,17 +1,12 @@
-import img from "../../Assets/3d-cartoon-style-character.png";
-import { TextField } from '@mui/material';
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import { IconButton, OutlinedInput } from "@mui/material";
-import InputAdornment from "@mui/material/InputAdornment";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { IconButton, InputAdornment } from "@mui/material";
 import { useAuth } from "../../Context/auth";
+import img from "../../Assets/3d-cartoon-style-character.png";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -19,146 +14,120 @@ const Register = () => {
   const [email, setemail] = useState("");
   const [phone, setphone] = useState("");
   const [password, setpassword] = useState("");
+  const { api, auth, setAuth } = useAuth();
 
-  const { api, auth,setAuth } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
+  const handleClickShowPassword = () => setShowPassword((prev) => !prev);
+  const handleMouseDownPassword = (event) => event.preventDefault();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!name || !email || !phone || !password) {
+      return toast.warn("Please fill all required fields");
+    }
+    if (!/^\d{10}$/.test(phone)) {
+      return toast.error("Phone number must be 10 digits");
+    }
+    if (password.length < 6) {
+      return toast.error("Password must be at least 6 characters");
+    }
+
     try {
-      const res = await axios.post(
-        `${api}/auth/register`,
-        {
-          name,
-          email,
-          phone,
-          password,
-        }
-      );
-      if (res && res.data.success) {
-        setAuth({
-          ...auth,
-          userId: res.data.userId,
-          token: res.data.token,
-        });
+      const res = await axios.post(`${api}/auth/register`, {
+        name,
+        email,
+        phone,
+        password,
+      });
+
+      if (res?.data?.success) {
         toast.success("Registered successfully");
+        setAuth({ ...auth, userId: res.data.userId, token: res.data.token });
+
         localStorage.setItem(
           "auth",
           JSON.stringify({ userId: res.data.userId, token: res.data.token })
         );
         navigate("/home");
       } else {
-        toast.error(res.data.message);
+        toast.error(res.data.message || "Registration failed");
       }
     } catch (error) {
-      toast.error(error.response.data.message);
+      const msg = error?.response?.data?.message || "Something went wrong";
+      toast.error(msg);
     }
   };
 
   useEffect(() => {
     if (auth?.token) {
-      toast.success(`You are already logged in`);
+      toast.info("You are already logged in");
       navigate("/home");
     }
-  }, [navigate, auth, api]);
+  }, [auth, navigate]);
 
   return (
-    <div style={{ display: "flex" }}>
-      <div style={{ width: "50%" }}>
-        <img src={img} style={{ marginLeft: 150, width: "70%", height: "100%" }} alt="Login" />
+    <div className="flex flex-col lg:flex-row items-center ">
+
+
+      <div className="hidden lg:flex w-full lg:w-1/2 items-center justify-center">
+        <img src={img} alt="Register" className="w-3/5 h-auto" />
       </div>
-      <div style={{ width: "50%" }}>
-        <form onSubmit={handleSubmit} style={{ width: "400px" }}>
-          <h1 style={{ textAlign: "center", padding: "5px 40px" }}>Register Yourself</h1>
-          <TextField
-            id="outlined-name"
-            label="Name"
-            value={name}
-            name="name"
-            required
-            onChange={(e) => {
-              setname(e.target.value);
-            }}
-            multiline
-            style={{ width: "100%", borderColor: "red", marginBottom: "30px" }}
-          />
-          <TextField
-            id="outlined-email"
-            label="Email"
-            value={email}
-            name="email"
-            required
-            onChange={(e) => {
-              setemail(e.target.value);
-            }}
-            multiline
-            style={{ width: "100%", borderColor: "red", marginBottom: "30px" }}
-            autoComplete="email"
-          />
-          <TextField
-            id="outlined-phone"
-            label="Phone"
-            value={phone}
-            required
-            name="phone"
-            onChange={(e) => {
-              setphone(e.target.value);
-            }}
-            multiline
-            style={{ width: "100%", borderColor: "red", marginBottom: "30px" }}
-          />
+
+
+      <div className="w-full lg:w-1/2 p-6 sm:p-10">
+        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md w-full max-w-md mx-auto">
+          <h1 className="text-2xl font-bold mb-6 text-center">Register Yourself</h1>
+
           <input
             type="text"
-            name="username"
-            value={email}
-            autoComplete="username"
-            style={{ display: "none" }}
-            readOnly
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setname(e.target.value)}
+            className="w-full p-3 mb-4 border rounded outline-none focus:ring-2 focus:ring-blue-400"
+            required
           />
-          <FormControl
-            sx={{ m: 1, width: "400px", marginLeft: "-0.1px",marginTop:"0px", marginBottom: "40px"}}
-            variant="outlined"
-          >
-            <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-            <OutlinedInput
-              id="outlined-adornment-password"
-              value={password}
-              name="password"
-              required
-              onChange={(e) => {
-                setpassword(e.target.value);
-              }}
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setemail(e.target.value)}
+            autoComplete="email"
+            className="w-full p-3 mb-4 border rounded outline-none focus:ring-2 focus:ring-blue-400"
+            required
+          />
+
+          <input
+            type="tel"
+            placeholder="Phone"
+            value={phone}
+            onChange={(e) => setphone(e.target.value)}
+            className="w-full p-3 mb-4 border rounded outline-none focus:ring-2 focus:ring-blue-400"
+            required
+          />
+
+          {/* Password field with visibility toggle */}
+          <div className="relative mb-6">
+            <input
               type={showPassword ? "text" : "password"}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-              label="Password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setpassword(e.target.value)}
+              className="w-full p-3 pr-12 border rounded outline-none focus:ring-2 focus:ring-blue-400"
+              required
               autoComplete="new-password"
             />
-          </FormControl>
+            <div className="absolute inset-y-0 right-2 flex items-center pr-2">
+              <IconButton onClick={handleClickShowPassword} onMouseDown={handleMouseDownPassword}>
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </div>
+          </div>
+
           <button
             type="submit"
-            style={{
-              width: "100%",
-              padding: "17px",
-              backgroundColor: "black",
-              color: "white",
-              fontSize: "15px",
-              borderRadius: "7px",
-            }}
+            className="w-full bg-black text-white py-3 rounded hover:bg-gray-800 transition-all"
           >
             SUBMIT
           </button>

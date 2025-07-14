@@ -1,139 +1,104 @@
 import React, { useEffect, useState } from "react";
-import InputLabel from "@mui/material/InputLabel";
-import InputAdornment from "@mui/material/InputAdornment";
-import FormControl from "@mui/material/FormControl";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { TextField, FormControl, InputLabel, OutlinedInput, InputAdornment, IconButton } from "@mui/material";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { useNavigate, useLocation, NavLink } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import img from "../../Assets/3d-rendering-cartoon-like-boy.png";
-import { IconButton, OutlinedInput, TextField } from "@mui/material";
+import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../Context/auth";
+import img from "../../Assets/3d-rendering-cartoon-like-boy.png";
 
 const Login = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { auth, setAuth, api } = useAuth();
   const [email, setemail] = useState("");
   const [password, setpassword] = useState("");
-  const { auth, setAuth, api } = useAuth();
-  const navigate = useNavigate();
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post(`${api}/auth/login`, {
-        email,
-        password,
-      });
-      if (res) {
-        setAuth({
-          ...auth,
-          userId: res.data.userId,
-          token: res.data.token,
-        });
-        toast.success("Login successfully");
-        localStorage.setItem(
-          "auth",
-          JSON.stringify({ userId: res.data.userId, token: res.data.token })
-        );
-        navigate("/home");
-      } else {
-        toast.error(res.data.message);
-      }
-    } catch (error) {
-      toast.error(error.response.data.message);
-    }
-  };
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleClickShowPassword = () => setShowPassword((prev) => !prev);
+  const handleMouseDownPassword = (event) => event.preventDefault();
 
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email || !password) return toast.warn("Please fill in all fields");
+
+    try {
+      const res = await axios.post(`${api}/auth/login`, { email, password });
+      if (res?.data?.token) {
+        setAuth({ ...auth, userId: res.data.userId, token: res.data.token });
+        localStorage.setItem("auth", JSON.stringify({ userId: res.data.userId, token: res.data.token }));
+        toast.success("Login successful");
+        navigate("/home");
+      } else {
+        toast.error(res.data.message || "Login failed");
+      }
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    }
   };
+
   useEffect(() => {
     if (auth?.token) {
-      toast.success(`you already logged in`);
+      toast.info("You are already logged in");
       navigate("/home");
     }
-  }, [navigate, api, auth, location]);
+  }, [auth, navigate, location]);
 
   return (
-    <div style={{ display: "flex" }}>
-      <div style={{ width: "50%" }}>
-        <img src={img} style={{ marginLeft: 150, width: "70%", height: "100%" }} alt="Login" />
-      </div>
-      <div style={{ width: "50%" }}>
-        <form onSubmit={handleSubmit} style={{ width: "400px" }}>
-          <h1 style={{ textAlign: "center", padding: "5px 40px" }}>Login Yourself</h1>
+    <div className="flex flex-col lg:flex-row  items-center ">
+      <ToastContainer position="top-right" autoClose={3000} />
 
-          <TextField
-            id="outlined-multiline-flexible"
-            label="Email"
+     
+      <div className="hidden lg:flex w-full lg:w-1/2 items-center justify-center">
+        <img src={img} alt="Login" className="w-3/5 h-auto" />
+      </div>
+
+<div className="w-full lg:w-1/2 p-6 sm:p-10">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white p-6 rounded-lg shadow-md w-full max-w-md mx-auto"
+        >
+          <h1 className="text-2xl font-bold mb-6 text-center">Login Yourself</h1>
+
+          <input
+            type="email"
+            placeholder="Email"
             value={email}
-            name="email"
-            required
-            onChange={(e) => {
-              setemail(e.target.value);
-            }}
-            style={{
-              width: "100%",
-              borderColor: "red",
-              marginBottom: "30px",
-            }}
+            onChange={(e) => setemail(e.target.value)}
+            className="w-full p-3 mb-4 border rounded outline-none focus:ring-2 focus:ring-blue-400"
             autoComplete="email"
+            required
           />
 
-          <FormControl
-            sx={{ m: 1, width: "400px", marginLeft: "-0.1px",marginBottom:"40px",marginTop:"0px"}}
-            variant="outlined"
-          >
-            <InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
-            <OutlinedInput
-              value={password}
-              name="password"
-              required
-              onChange={(e) => {
-                setpassword(e.target.value);
-              }}
-              id="outlined-adornment-password"
-              type={showPassword ? "text" : "password"}
-              endAdornment={
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={handleClickShowPassword}
-                    onMouseDown={handleMouseDownPassword}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              }
-              label="Password"
-              autoComplete="current-password"
-            />
-          </FormControl>
-
+          <div className="relative mb-6">
+                     <input
+                       type={showPassword ? "text" : "password"}
+                       placeholder="Password"
+                       value={password}
+                       onChange={(e) => setpassword(e.target.value)}
+                       className="w-full p-3 pr-12 border rounded outline-none focus:ring-2 focus:ring-blue-400"
+                       required
+                       autoComplete="new-password"
+                     />
+                     <div className="absolute inset-y-0 right-2 flex items-center pr-2">
+                       <IconButton onClick={handleClickShowPassword} onMouseDown={handleMouseDownPassword}>
+                         {showPassword ? <VisibilityOff /> : <Visibility />}
+                       </IconButton>
+                     </div>
+                   </div>
           <button
-            style={{
-              width: "100%",
-              padding: "17px",
-              backgroundColor: "black",
-              color: "white",
-              fontSize: "15px",
-              borderRadius: "7px",
-            }}
+            type="submit"
+            className="w-full bg-black text-white py-3 rounded hover:bg-gray-800 transition-all"
           >
             Submit
           </button>
-          <p
-            style={{
-              marginTop: "30px",
-              textAlign: "right",
-              marginRight: "7px",
-            }}
-          >
-            Don't have an account yet? <NavLink to="/register">Sign up</NavLink>
+
+          <p className="mt-6 text-right text-sm text-gray-700">
+            Don't have an account?{" "}
+            <NavLink to="/register" className="text-blue-600 hover:underline">
+              Sign up
+            </NavLink>
           </p>
         </form>
       </div>
