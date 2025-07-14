@@ -6,7 +6,6 @@ const formidable = require("express-formidable");
 
 router.route("/").post(isAuthenticatedUser,pages.createNotes);
 router.route("/").get(isAuthenticatedUser,pages.getFilteredNotes);
-router.route("/all").get(isAuthenticatedUser,pages.getAllNotes);
 router.route('/favorite').get(isAuthenticatedUser,pages.getFavoriteNotes)
 router.route('/favorite/:id').put(isAuthenticatedUser,pages.UpdateFavorite)
 router.route("/:id").get(isAuthenticatedUser,pages.getSingleNote);
